@@ -88,9 +88,6 @@ Feel free to fork this repository and submit pull requests with improvements or 
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the [MIT License](LICENSE).
 
 Happy coding! 🎉
-
-
-Let me know if you'd like further adjustments or additional sections.
