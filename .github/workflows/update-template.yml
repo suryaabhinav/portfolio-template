@@ -1,0 +1,57 @@
+name: Update Template Repository
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-template:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+
+      - name: Create temporary directory and copy files
+        run: |
+          mkdir -p temp_workdir
+          rsync -av --exclude=temp_workdir --exclude='.git' --exclude='README.md' ./ temp_workdir/
+
+      - name: Remove private assets in temporary directory
+        run: |
+          cd temp_workdir
+          rm -rf src/assets
+          rm -rf src/constants
+          mv temp/assets src/assets
+          mv temp/constants src/constants
+          cd ..
+
+      - name: Fetch latest changes from portfolio-template
+        env:
+          PERSONAL_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        run: |
+          cd temp_workdir
+          git init
+          git remote add origin https://suryaabhinav:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/suryaabhinav/portfolio-template.git
+          git fetch origin main
+          git checkout -B main origin/main
+
+      - name: Commit and push changes to portfolio-template
+        env:
+          PERSONAL_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        run: |
+          cd temp_workdir
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add . -- ':!README.md'
+          git commit -m "Update template" || echo "No changes to commit"
+          git pull --rebase origin main
+          git push origin main
+          cd ..
+
+      - name: Clean up temporary directory
+        run: |
+          rm -rf temp_workdir
